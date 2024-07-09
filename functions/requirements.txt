@@ -1,3 +1,4 @@
 cloudevents
 functions-framework
 google-cloud-firestore
+google-cloud-secret-manager
