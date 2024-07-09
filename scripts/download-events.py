@@ -17,10 +17,9 @@ def fetch_and_save_collection(collection_name, output_file):
 
     with open(output_file, "w") as f:
         json.dump(data, f, ensure_ascii=False, indent=4)
+    print(f"Data saved to {output_file}")
 
 
 if __name__ == "__main__":
-    # Specify the Firestore collection name and output file path
-    collection_name = "nest_events"
-    output_file = "nest-events.json"
-    fetch_and_save_collection(collection_name, output_file)
+    fetch_and_save_collection("nest_events", "nest-events.json")
+    fetch_and_save_collection("weather_events", "weather-events.json")

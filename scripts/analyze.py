@@ -24,7 +24,7 @@ zones = {
 }
 
 
-def load_data():
+def load_nest_events():
     with open("nest-events.json", "r") as file:
         messages = json.load(file)
     events = []
@@ -64,6 +64,31 @@ def load_data():
     return events
 
 
+def load_weather_events():
+    with open("weather-events.json", "r") as file:
+        observations = json.load(file)
+    events = []
+    for observation in observations:
+        timestamp = (
+            pd.to_datetime(observation["dt"], unit="s")
+            .tz_localize("UTC")
+            .tz_convert("US/Eastern")
+        )
+        event = {}
+        event["Time"] = timestamp
+        event["Zone"] = "Weather"
+        event["Temperature"] = observation["main"]["temp"] * 9 / 5 + 32
+        event["Humidity"] = observation["main"]["humidity"]
+        events.append(event)
+    return events
+
+
+def load_events():
+    events = load_nest_events()
+    events.extend(load_weather_events())
+    return events
+
+
 def extract_trait(name, events):
     # select the events that have name as a key
     points = []
@@ -78,13 +103,13 @@ def plot_trait(name, events):
     plt.figure()
     sns.lineplot(x="Time", y=name, hue="Zone", data=df)
     plt.xticks(rotation=45)
-    plt.gca().xaxis.set_major_formatter(mdates.DateFormatter("%H:%M"))
-    plt.gca().xaxis.set_major_locator(mdates.HourLocator())
+    plt.gca().xaxis.set_major_formatter(mdates.DateFormatter("%Y-%m-%d"))
+    plt.gca().xaxis.set_major_locator(mdates.DayLocator())
     file_name = f"{name}.png"
     plt.savefig(file_name, dpi=300, bbox_inches="tight", pad_inches=0.5)
     print(f"Plot: {file_name}")
 
 
-events = load_data()
+events = load_events()
 plot_trait("Temperature", events)
 plot_trait("Humidity", events)
