@@ -1,0 +1,19 @@
+name: Robert
+buildings:
+  "1":
+    name: Salem Home
+    latitude: 42.76950214174165
+    longitude: -71.27612488426918
+    devices:
+      "2":
+        name: 1st Floor
+        type: thermostat
+        resource: enterprises/a7fa74ba-12cd-4339-9d78-69ec04966021/devices/AVPHwEuZudsIhRFpxmh9v-OQB0AB6fOUpZR0HLLsPjuvvPHiyTqalvorxtMktaunEWS03UEey0UmlFFg99IjjYwyvo88fQ
+      "3":
+        name: 2nd Floor
+        type: thermostat
+        resource: enterprises/a7fa74ba-12cd-4339-9d78-69ec04966021/devices/AVPHwEvVxjkpbUPFJIQ4woOybkxMgp4_4HrURh2aBdksiLKRBJwwaqPIJ6tacRc4ftGfYJPckgo8wni_rl06pG460hOdvw
+      "4":
+        name: Master Bedroom
+        type: thermostat
+        resource: enterprises/a7fa74ba-12cd-4339-9d78-69ec04966021/devices/AVPHwEuLJsbdBjWkMFyPB6SKwfXsqSiDObYXgJJyy6jrTlHkEqnn2xWzH3JStzDJ2fLv7m__tKAsdjLqxyoE9ptFowYxXg
