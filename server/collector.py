@@ -2,23 +2,25 @@ import base64
 import json
 
 import requests
-from flask import Blueprint, request
+from flask import Blueprint
 from google.auth import default
 from google.cloud import firestore, secretmanager
 from user import active_user
 
+# from flask import Blueprint, request
+
 collector_blueprint = Blueprint("collector", __name__)
 
 db = firestore.Client()
-
-weather_name = "weather-events-test"
-nest_name = "nest-events-test"
+user_data = db.collection("users").document(active_user.guid)
+weather_name = "weather-events"
+nest_name = "nest-events"
 
 
 def store_event(event_type: str, event: dict) -> None:
     """Store event in firestore"""
     print(f"Storing {event_type} event {event}")
-    doc_ref = db.collection(event_type).document()
+    doc_ref = user_data.collection(event_type).document()
     doc_ref.set(event)
     return
 
@@ -70,14 +72,14 @@ def decode_message(message):
     return o
 
 
-@collector_blueprint.route("/nest", methods=["POST"])
-def nest_collector():
-    """record information reported by thermostat"""
-    if not request.json:
-        return "Unsupported media type\n", 415
-    print(f"Received nest event: {request.json}")
-    store_event(nest_name, decode_message(request.json))
-    return "Received nest event\n", 200
+# @collector_blueprint.route("/nest", methods=["POST"])
+# def nest_collector():
+#    """record information reported by thermostat"""
+#    if not request.json:
+#        return "Unsupported media type\n", 415
+#    print(f"Received nest event: {request.json}")
+#    store_event(nest_name, decode_message(request.json))
+#    return "Received nest event\n", 200
 
 
 # For quick tests

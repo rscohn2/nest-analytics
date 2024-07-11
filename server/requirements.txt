@@ -1,3 +1,6 @@
 Flask
 gunicorn
 PyYaml
+google-auth
+google-cloud-firestore
+google-cloud-secret-manager

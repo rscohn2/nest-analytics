@@ -7,7 +7,7 @@ scheduler_blueprint = Blueprint("scheduler", __name__)
 @scheduler_blueprint.route("/hourly", methods=["POST"])
 def handle_hourly_tasks():
     collector.hourly()
-    return "Hourly tasks processed", 200
+    return "Hourly tasks processed\n", 200
 
 
 # Quick tests
