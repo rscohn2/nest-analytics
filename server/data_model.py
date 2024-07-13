@@ -1,6 +1,5 @@
 import yaml
-
-active_user = None
+from google.cloud import firestore
 
 
 class Device:
@@ -35,6 +34,8 @@ class User:
                     self.buildings[b_key] = Building(b_value)
             else:
                 setattr(self, u_key, u_value)
+        db = firestore.Client()
+        self.data = db.collection("users").document(self.guid)
 
     def __str__(self):
         return yaml.dump(self.__dict__)
@@ -48,14 +49,12 @@ def add_guids(guid, data):
             add_guids(key, value)
 
 
-def load_user():
-    with open("user.yaml", "r") as file:
+def load_user(guid):
+    with open("user_data.yaml", "r") as file:
         user = yaml.safe_load(file)
     add_guids("0", user)
     return User(user)
 
 
-active_user = load_user()
-
 if __name__ == "__main__":
-    print(active_user)
+    pass

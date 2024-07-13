@@ -2,67 +2,40 @@ import base64
 import json
 
 import requests
-from flask import Blueprint
-from google.auth import default
-from google.cloud import firestore, secretmanager
-from user import active_user
-
-# from flask import Blueprint, request
+from data_model import load_user
+from flask import Blueprint, request
+from ha_secrets import get_key
 
 collector_blueprint = Blueprint("collector", __name__)
 
-db = firestore.Client()
-user_data = db.collection("users").document(active_user.guid)
 weather_name = "weather-events"
 nest_name = "nest-events"
 
 
-def store_event(event_type: str, event: dict) -> None:
+def store_event(user, event_type: str, event: dict) -> None:
     """Store event in firestore"""
     print(f"Storing {event_type} event {event}")
-    doc_ref = user_data.collection(event_type).document()
+    doc_ref = user.data.collection(event_type).document()
     doc_ref.set(event)
     return
 
 
-def current_project_id():
-    _, project_id = default()
-    if project_id is None:
-        raise Exception(
-            "Project ID could not be determined from the environment."
-        )
-    return project_id
-
-
-def get_secret(secret_id: str) -> dict:
-    """Retrieve a secret from Google Secret Manager and deserialize it."""
-    client = secretmanager.SecretManagerServiceClient()
-    name = (
-        f"projects/{current_project_id()}/"
-        f"secrets/{secret_id}/versions/latest"
-    )
-    response = client.access_secret_version(request={"name": name})
-    secret_data = response.payload.data.decode("UTF-8")
-    return json.loads(secret_data)
-
-
-def fetch_weather() -> None:
+def fetch_weather(user) -> None:
     """Fetch and record weather data from OpenWeatherMap."""
-    api_key = get_secret("api-keys")["open-weather"]
-    for building in active_user.buildings.values():
+    for building in user.buildings.values():
         url = (
             "https://api.openweathermap.org/data/2.5/weather"
             f"?lat={building.latitude}&lon={building.longitude}"
-            f"&appid={api_key}&units=metric"
+            f"&appid={get_key('open-weather')}&units=metric"
         )
         response = requests.get(url)
         data = response.json()
-        store_event(weather_name, data)
+        store_event(user, weather_name, data)
 
 
-def hourly() -> None:
-    """Triggered once an hour by scheduer module"""
-    fetch_weather()
+def hourly(user) -> None:
+    """Triggered once an hour by scheduler module"""
+    fetch_weather(user)
 
 
 def decode_message(message):
@@ -72,17 +45,17 @@ def decode_message(message):
     return o
 
 
-# @collector_blueprint.route("/nest", methods=["POST"])
-# def nest_collector():
-#    """record information reported by thermostat"""
-#    if not request.json:
-#        return "Unsupported media type\n", 415
-#    print(f"Received nest event: {request.json}")
-#    store_event(nest_name, decode_message(request.json))
-#    return "Received nest event\n", 200
+@collector_blueprint.route("/nest", methods=["POST"])
+def nest_collector():
+    """record information reported by thermostat"""
+    if not request.json:
+        return "Unsupported media type\n", 415
+    print(f"Received nest event: {request.json}")
+    store_event(nest_name, decode_message(request.json))
+    return "Received nest event\n", 200
 
 
 # For quick tests
 if __name__ == "__main__":
-    fetch_weather()
+    fetch_weather(load_user())
     pass
