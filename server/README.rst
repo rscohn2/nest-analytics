@@ -4,7 +4,11 @@ Server
 
 Deploy server on google app engine::
 
-    gcloud app deploy app.yaml cron.yaml
+    gcloud -q app deploy app.yaml cron.yaml
+
+See logs::
+
+    gcloud app logs tail -s default
 
 Local Development
 =================

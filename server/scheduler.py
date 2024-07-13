@@ -13,8 +13,7 @@ def handle_hourly_tasks():
         print("aborting")
         abort(403)  # Ensures only cron jobs can call this endpoint
 
-    user_guid = 0
-    user = load_user(user_guid)
+    user = load_user(0)
     collector.hourly(user)
     return "Hourly tasks processed\n", 200
 

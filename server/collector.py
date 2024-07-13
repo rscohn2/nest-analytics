@@ -3,21 +3,13 @@ import json
 
 import requests
 from data_model import load_user
-from flask import Blueprint, request
+from flask import Blueprint, abort, request
 from ha_secrets import get_key
 
 collector_blueprint = Blueprint("collector", __name__)
 
 weather_name = "weather-events"
 nest_name = "nest-events"
-
-
-def store_event(user, event_type: str, event: dict) -> None:
-    """Store event in firestore"""
-    print(f"Storing {event_type} event {event}")
-    doc_ref = user.data.collection(event_type).document()
-    doc_ref.set(event)
-    return
 
 
 def fetch_weather(user) -> None:
@@ -30,7 +22,7 @@ def fetch_weather(user) -> None:
         )
         response = requests.get(url)
         data = response.json()
-        store_event(user, weather_name, data)
+        user.store_event(weather_name, data)
 
 
 def hourly(user) -> None:
@@ -47,15 +39,20 @@ def decode_message(message):
 
 @collector_blueprint.route("/nest", methods=["POST"])
 def nest_collector():
-    """record information reported by thermostat"""
+    """Record information reported by thermostat"""
+    token = request.args.get("token", default=None, type=str)
+    if not token or token != get_key("ha-service"):
+        print("aborting")
+        abort(403)
+
     if not request.json:
         return "Unsupported media type\n", 415
-    print(f"Received nest event: {request.json}")
-    store_event(nest_name, decode_message(request.json))
+
+    user = load_user(0)
+    user.store_event(nest_name, decode_message(request.json))
     return "Received nest event\n", 200
 
 
 # For quick tests
 if __name__ == "__main__":
-    fetch_weather(load_user())
     pass

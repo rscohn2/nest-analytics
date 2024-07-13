@@ -40,6 +40,11 @@ class User:
     def __str__(self):
         return yaml.dump(self.__dict__)
 
+    def store_event(self, event_type: str, event: dict) -> None:
+        doc_ref = self.data.collection(event_type).document()
+        doc_ref.set(event)
+        return
+
 
 def add_guids(guid, data):
     if isinstance(data, dict):
