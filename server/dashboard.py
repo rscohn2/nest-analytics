@@ -23,8 +23,16 @@ def dashboard():
     end_date = datetime.now()
 
     df = pd.DataFrame(fetch_events(user, start_date, end_date))
+    # eliminate measurements with missing temperature
+    df = df.dropna(subset=["Temperature"])
+
+    # Filter out changes less than 0.25.
+    # Calculate the difference in temperature within the same zone
+    df["TempChange"] = df.groupby("Zone")["Temperature"].diff().abs()
+    df_filtered = df[df["TempChange"] >= 0.25].copy()
+
     temperature_fig = px.line(
-        df, x="Time", y="Temperature", color="Zone", markers=True
+        df_filtered, x="Time", y="Temperature", color="Zone", markers=True
     )
     temperature_html = temperature_fig.to_html(
         full_html=False, include_plotlyjs="cdn"
