@@ -42,5 +42,4 @@ def retrieve_weather(user, begin: datetime, end: datetime) -> List[Dict]:
         event["Temperature"] = observation["main"]["temp"] * 9 / 5 + 32
         event["Humidity"] = observation["main"]["humidity"]
         events.append(event)
-    print(f"Events: {events}")
     return events
