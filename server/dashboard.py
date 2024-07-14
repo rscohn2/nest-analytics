@@ -16,13 +16,7 @@ def fetch_events(user, start_date, end_date):
     return events
 
 
-@dashboard_blueprint.route("/main", methods=["GET", "POST"])
-def dashboard():
-    user = load_user(0)
-    start_date = datetime.now() - timedelta(days=1)
-    end_date = datetime.now()
-
-    df = pd.DataFrame(fetch_events(user, start_date, end_date))
+def plot_temperature(df):
     # eliminate measurements with missing temperature
     df = df.dropna(subset=["Temperature"])
 
@@ -37,4 +31,37 @@ def dashboard():
     temperature_html = temperature_fig.to_html(
         full_html=False, include_plotlyjs="cdn"
     )
-    return render_template("dashboard.html", temperature_fig=temperature_html)
+    return temperature_html
+
+
+def plot_humidity(df):
+    # eliminate measurements with missing humidity
+    df = df.dropna(subset=["Humidity"])
+
+    # Filter out changes less than 0.25.
+    # Calculate the difference in temperature within the same zone
+    df["HumidityChange"] = df.groupby("Zone")["Humidity"].diff().abs()
+    df_filtered = df[df["HumidityChange"] >= 1].copy()
+
+    fig = px.line(
+        df_filtered, x="Time", y="Humidity", color="Zone", markers=True
+    )
+    html = fig.to_html(full_html=False, include_plotlyjs=False)
+    return html
+
+
+@dashboard_blueprint.route("/main", methods=["GET", "POST"])
+def dashboard():
+    user = load_user(0)
+    start_date = datetime.now() - timedelta(days=1)
+    end_date = datetime.now()
+
+    df = pd.DataFrame(fetch_events(user, start_date, end_date))
+    temperature_html = plot_temperature(df)
+    humidity_html = plot_humidity(df)
+
+    return render_template(
+        "dashboard.html",
+        temperature_fig=temperature_html,
+        humidity_fig=humidity_html,
+    )
