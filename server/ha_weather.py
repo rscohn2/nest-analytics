@@ -1,12 +1,25 @@
 import json
+from datetime import datetime
+from os import environ
+from typing import Dict, List
 
 import pandas as pd
 
 
-def load_weather_events():
-    with open("weather-events.json", "r") as file:
-        observations = json.load(file)
-    observations = sorted(observations, key=lambda x: x["dt"])
+def retrieve_weather(user, begin: datetime, end: datetime) -> List[Dict]:
+    local_file = "weather-events.json"
+    if environ.get("HA_WEATHER") == "replay":
+        with open(local_file, "r") as file:
+            observations = json.load(file)
+    else:
+        observations = user.data.collection("weather-events").stream()
+        observations = sorted(
+            [doc.to_dict() for doc in observations], key=lambda x: x["dt"]
+        )
+    if environ.get("HA_WEATHER") == "record":
+        with open(local_file, "w") as file:
+            json.dump(observations, file, indent=4, sort_keys=True)
+
     events = []
     for observation in observations:
         timestamp = (
@@ -22,7 +35,3 @@ def load_weather_events():
         events.append(event)
     print(f"Events: {events}")
     return events
-
-
-def retrieve_weather(user, begin, end):
-    return load_weather_events()
