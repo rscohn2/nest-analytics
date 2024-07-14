@@ -16,6 +16,25 @@ def fetch_events(user, start_date, end_date):
     return events
 
 
+def plot_cooling_time(df):
+    cooling_df = df.copy()
+    cooling_df.set_index("Time", inplace=True)
+    # Group by day and sum 'Cooling Time'
+    daily_cooling = (
+        cooling_df.groupby(["Zone", pd.Grouper(freq="D")])["Cooling Time"]
+        .sum()
+        .reset_index()
+    )
+    # Plot
+    cooling_fig = px.bar(
+        daily_cooling, x="Time", y="Cooling Time", color="Zone", text_auto=True
+    )
+    cooling_fig.update_layout(barmode="stack")
+    cooling_fig.update_xaxes(title_text="Day", dtick="D1")
+    cooling_fig.update_yaxes(title_text="Cooling Time (minutes)")
+    return cooling_fig.to_html(full_html=False, include_plotlyjs="cdn")
+
+
 def plot_temperature(df):
     # eliminate measurements with missing temperature
     df_clean = df.dropna(subset=["Temperature"]).copy()
@@ -64,11 +83,10 @@ def dashboard():
     end_date = datetime.now()
 
     df = pd.DataFrame(fetch_events(user, start_date, end_date))
-    temperature_html = plot_temperature(df)
-    humidity_html = plot_humidity(df)
 
     return render_template(
         "dashboard.html",
-        temperature_fig=temperature_html,
-        humidity_fig=humidity_html,
+        temperature_fig=plot_temperature(df),
+        humidity_fig=plot_humidity(df),
+        cooling_time_fig=plot_cooling_time(df),
     )

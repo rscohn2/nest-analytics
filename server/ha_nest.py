@@ -6,11 +6,17 @@ from typing import Dict, List
 import pandas as pd
 
 
+class Zone:
+    def __init__(self, name: str) -> None:
+        self.name = name
+        self.status = "unknown"
+
+
 def zone_map(user):
     zones = {}
     for building in user.buildings.values():
         for device in building.devices.values():
-            zones[device.resource] = device.name
+            zones[device.resource] = Zone(device.name)
     return zones
 
 
@@ -52,9 +58,10 @@ def retrieve_nest(user, begin: datetime, end: datetime) -> List[Dict]:
             for trait, value in observation["resourceUpdate"][
                 "traits"
             ].items():
+                zone = zones[observation["resourceUpdate"]["name"]]
                 event = {}
                 event["Time"] = timestamp
-                event["Zone"] = zones[observation["resourceUpdate"]["name"]]
+                event["Zone"] = zone.name
                 if trait == "sdm.devices.traits.Temperature":
                     event["Temperature"] = (
                         value["ambientTemperatureCelsius"] * 9 / 5 + 32
@@ -62,7 +69,13 @@ def retrieve_nest(user, begin: datetime, end: datetime) -> List[Dict]:
                 elif trait == "sdm.devices.traits.Humidity":
                     event["Humidity"] = value["ambientHumidityPercent"]
                 elif trait == "sdm.devices.traits.ThermostatHvac":
-                    pass
+                    if zone.status == "COOLING":
+                        event["Cooling Time"] = (
+                            timestamp - zone.cooling_start
+                        ).seconds / 60
+                    if value["status"] == "COOLING":
+                        zone.cooling_start = timestamp
+                    zone.status = value["status"]
                 elif trait == "sdm.devices.traits.ThermostatMode":
                     pass
                 elif trait == "sdm.devices.traits.ThermostatEco":
