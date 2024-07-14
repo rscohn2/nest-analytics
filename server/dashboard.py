@@ -18,12 +18,17 @@ def fetch_events(user, start_date, end_date):
 
 def plot_temperature(df):
     # eliminate measurements with missing temperature
-    df = df.dropna(subset=["Temperature"])
+    df_clean = df.dropna(subset=["Temperature"]).copy()
 
-    # Filter out changes less than 0.25.
     # Calculate the difference in temperature within the same zone
-    df["TempChange"] = df.groupby("Zone")["Temperature"].diff().abs()
-    df_filtered = df[df["TempChange"] >= 0.25].copy()
+    df_clean["TempChange"] = (
+        df_clean.groupby("Zone")["Temperature"].diff().abs()
+    )
+
+    # Filter out changes less than 0.25
+    df_filtered = df_clean.loc[df_clean["TempChange"] >= 0.25].copy()
+
+    # Continue with plotting or other operations on df_filtered
 
     temperature_fig = px.line(
         df_filtered, x="Time", y="Temperature", color="Zone", markers=True
@@ -36,12 +41,14 @@ def plot_temperature(df):
 
 def plot_humidity(df):
     # eliminate measurements with missing humidity
-    df = df.dropna(subset=["Humidity"])
+    df_clean = df.dropna(subset=["Humidity"]).copy()
 
     # Filter out changes less than 0.25.
     # Calculate the difference in temperature within the same zone
-    df["HumidityChange"] = df.groupby("Zone")["Humidity"].diff().abs()
-    df_filtered = df[df["HumidityChange"] >= 1].copy()
+    df_clean["HumidityChange"] = (
+        df_clean.groupby("Zone")["Humidity"].diff().abs()
+    )
+    df_filtered = df_clean.loc[df_clean["HumidityChange"] >= 1].copy()
 
     fig = px.line(
         df_filtered, x="Time", y="Humidity", color="Zone", markers=True
