@@ -4,3 +4,4 @@ PyYaml
 google-auth
 google-cloud-firestore
 google-cloud-secret-manager
+plotly
