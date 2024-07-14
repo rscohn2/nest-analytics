@@ -1,5 +1,5 @@
 import json
-from datetime import datetime
+from datetime import datetime, timezone
 from os import environ
 from typing import Dict, List
 
@@ -14,6 +14,10 @@ def zone_map(user):
     return zones
 
 
+def convert_to_iso(dt: datetime) -> str:
+    return dt.astimezone(timezone.utc).isoformat().replace("+00:00", "Z")
+
+
 def retrieve_nest(user, begin: datetime, end: datetime) -> List[Dict]:
     local_file = "nest-events.json"
     replay_cmd = environ.get("HA_NEST")
@@ -21,11 +25,13 @@ def retrieve_nest(user, begin: datetime, end: datetime) -> List[Dict]:
         with open(local_file, "r") as file:
             observations = json.load(file)
     else:
+        b = convert_to_iso(begin)
+        e = convert_to_iso(end)
         observations = (
-            user.data.collection("nest-events").stream()
-            # .where("dt", ">=", begin.isoformat())
-            # .where("dt", "<=", end.isoformat())
-            # .stream()
+            user.data.collection("nest-events")
+            .where("timestamp", ">=", b)
+            .where("timestamp", "<=", e)
+            .stream()
         )
         # sort based on dt field
         observations = sorted(
