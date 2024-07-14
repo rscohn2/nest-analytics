@@ -12,9 +12,18 @@ def retrieve_weather(user, begin: datetime, end: datetime) -> List[Dict]:
         with open(local_file, "r") as file:
             observations = json.load(file)
     else:
-        observations = user.data.collection("weather-events").stream()
+        begin_timestamp = int(begin.timestamp())
+        end_timestamp = int(end.timestamp())
+
+        observations = (
+            user.data.collection("weather-events")
+            .where("dt", ">=", begin_timestamp)
+            .where("dt", "<=", end_timestamp)
+            .stream()
+        )
+        # sort based on dt field
         observations = sorted(
-            [doc.to_dict() for doc in observations], key=lambda x: x["dt"]
+            [obs.to_dict() for obs in observations], key=lambda x: x["dt"]
         )
     if environ.get("HA_WEATHER") == "record":
         with open(local_file, "w") as file:

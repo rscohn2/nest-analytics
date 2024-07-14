@@ -17,7 +17,7 @@ def fetch_data(user, start_date, end_date):
 @dashboard_blueprint.route("/main", methods=["GET", "POST"])
 def dashboard():
     user = load_user(0)
-    start_date = datetime.now() - timedelta(days=7)
+    start_date = datetime.now() - timedelta(days=1)
     end_date = datetime.now()
 
     df = pd.DataFrame(fetch_data(user, start_date, end_date))
