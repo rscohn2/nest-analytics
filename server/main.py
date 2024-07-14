@@ -1,10 +1,12 @@
 from collector import collector_blueprint
+from dashboard import dashboard_blueprint
 from flask import Flask
 from scheduler import scheduler_blueprint
 
 app = Flask(__name__)
 app.register_blueprint(collector_blueprint, url_prefix="/collector")
 app.register_blueprint(scheduler_blueprint, url_prefix="/scheduler")
+app.register_blueprint(dashboard_blueprint, url_prefix="/dashboard")
 
 
 @app.route("/")
