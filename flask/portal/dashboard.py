@@ -2,10 +2,11 @@ from datetime import datetime, timedelta
 
 import pandas as pd
 import plotly.express as px
-from data_model import load_user
+from common.data_model import load_user
+from portal.nest import retrieve_nest
+from portal.weather import retrieve_weather
+
 from flask import Blueprint, render_template, request
-from ha_nest import retrieve_nest
-from ha_weather import retrieve_weather
 
 dashboard_blueprint = Blueprint("dashboard", __name__)
 

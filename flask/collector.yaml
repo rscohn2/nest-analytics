@@ -1,0 +1,8 @@
+runtime: python312
+service: collector
+
+entrypoint: gunicorn -b :$PORT collector_main:app
+
+handlers:
+- url: /.*
+  script: auto

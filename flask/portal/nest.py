@@ -66,6 +66,8 @@ def retrieve_nest(user, begin: datetime, end: datetime) -> List[Dict]:
                     event["Temperature"] = (
                         value["ambientTemperatureCelsius"] * 9 / 5 + 32
                     )
+                elif trait == "sdm.devices.traits.Connectivity":
+                    pass
                 elif trait == "sdm.devices.traits.Humidity":
                     event["Humidity"] = value["ambientHumidityPercent"]
                 elif trait == "sdm.devices.traits.ThermostatHvac":

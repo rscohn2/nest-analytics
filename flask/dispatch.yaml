@@ -1,0 +1,5 @@
+dispatch:
+  - url: "collector.climate.rcohn.us/*"
+    service: collector
+  - url: "climate.rcohn.us/*"
+    service: portal

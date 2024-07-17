@@ -1,5 +1,6 @@
-import collector
-from data_model import load_user
+import collector.collector as collector
+from common.data_model import load_user
+
 from flask import Blueprint, abort, request
 
 scheduler_blueprint = Blueprint("scheduler", __name__)

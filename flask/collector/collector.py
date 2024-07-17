@@ -2,9 +2,10 @@ import base64
 import json
 
 import requests
-from data_model import load_user
+from common.data_model import load_user
+from common.secrets import get_key
+
 from flask import Blueprint, abort, request
-from ha_secrets import get_key
 
 collector_blueprint = Blueprint("collector", __name__)
 

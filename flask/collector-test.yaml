@@ -1,0 +1,11 @@
+runtime: python312
+service: collector
+
+entrypoint: gunicorn -b :$PORT collector_main:app
+
+env_variables:
+  HA_TEST: 'true'
+
+handlers:
+- url: /.*
+  script: auto

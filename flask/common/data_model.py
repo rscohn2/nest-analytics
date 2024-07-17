@@ -1,3 +1,5 @@
+from os import environ
+
 import yaml
 from google.cloud import firestore
 
@@ -35,7 +37,12 @@ class User:
             else:
                 setattr(self, u_key, u_value)
         db = firestore.Client()
-        self.data = db.collection("users").document(self.guid)
+        if environ.get("HA_TEST_DB"):
+            self.data = (
+                db.document("TEST").collection("users").document(self.guid)
+            )
+        else:
+            self.data = db.collection("users").document(self.guid)
 
     def __str__(self):
         return yaml.dump(self.__dict__)
