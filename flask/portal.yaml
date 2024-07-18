@@ -1,5 +1,5 @@
 runtime: python312
-service: portal
+service: default
 
 entrypoint: gunicorn -b :$PORT portal_main:app
 
