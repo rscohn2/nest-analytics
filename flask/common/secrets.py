@@ -1,4 +1,5 @@
 import json
+import re
 
 from google.auth import default
 from google.cloud import secretmanager
@@ -13,6 +14,10 @@ def current_project_id():
     return project_id
 
 
+def remove_comments(json_in: str) -> str:
+    return re.sub(r"#.*", "", json_in)
+
+
 def get_secret(secret_id: str) -> dict:
     """Retrieve a secret from Google Secret Manager and deserialize it."""
     client = secretmanager.SecretManagerServiceClient()
@@ -22,7 +27,7 @@ def get_secret(secret_id: str) -> dict:
     )
     response = client.access_secret_version(request={"name": name})
     secret_data = response.payload.data.decode("UTF-8")
-    return json.loads(secret_data)
+    return json.loads(remove_comments(secret_data))
 
 
 def get_key(key_name: str) -> str:

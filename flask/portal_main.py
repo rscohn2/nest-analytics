@@ -1,8 +1,10 @@
+from common.secrets import get_key
 from portal.dashboard import dashboard_blueprint
 
 from flask import Flask
 
 app = Flask(__name__)
+app.secret_key = get_key("portal")
 app.register_blueprint(dashboard_blueprint, url_prefix="/dashboard")
 
 

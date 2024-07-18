@@ -5,7 +5,7 @@ import requests
 from common.data_model import load_user
 from common.secrets import get_key
 
-from flask import Blueprint, abort, request
+from flask import Blueprint, abort, current_app, request
 
 collector_blueprint = Blueprint("collector", __name__)
 
@@ -42,7 +42,7 @@ def decode_message(message):
 def nest_collector():
     """Record information reported by thermostat"""
     token = request.args.get("token", default=None, type=str)
-    if not token or token != get_key("ha-service"):
+    if not token or token != current_app.secret_key:
         print("aborting")
         abort(403)
 
