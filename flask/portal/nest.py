@@ -66,8 +66,6 @@ def retrieve_nest(user, begin: datetime, end: datetime) -> List[Dict]:
                     event["Temperature"] = (
                         value["ambientTemperatureCelsius"] * 9 / 5 + 32
                     )
-                elif trait == "sdm.devices.traits.Connectivity":
-                    pass
                 elif trait == "sdm.devices.traits.Humidity":
                     event["Humidity"] = value["ambientHumidityPercent"]
                 elif trait == "sdm.devices.traits.ThermostatHvac":
@@ -78,15 +76,15 @@ def retrieve_nest(user, begin: datetime, end: datetime) -> List[Dict]:
                     if value["status"] == "COOLING":
                         zone.cooling_start = timestamp
                     zone.status = value["status"]
-                elif trait == "sdm.devices.traits.ThermostatMode":
-                    pass
-                elif trait == "sdm.devices.traits.ThermostatEco":
-                    pass
-                elif (
-                    trait == "sdm.devices.traits.ThermostatTemperatureSetpoint"
+                elif trait in (
+                    "sdm.devices.traits.Connectivity",
+                    "sdm.devices.traits.Fan",
+                    "sdm.devices.traits.Info",
+                    "sdm.devices.traits.Settings",
+                    "sdm.devices.traits.ThermostatEco",
+                    "sdm.devices.traits.ThermostatMode",
+                    "sdm.devices.traits.ThermostatTemperatureSetpoint",
                 ):
-                    pass
-                elif trait == "sdm.devices.traits.Fan":
                     pass
                 else:
                     raise ValueError(f"Unexpected trait: {trait}")
