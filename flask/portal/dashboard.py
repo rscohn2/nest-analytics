@@ -32,7 +32,9 @@ def plot_cooling_time(df):
     )
     cooling_fig.update_layout(barmode="stack")
     cooling_fig.update_xaxes(title_text="Day", dtick="D1")
-    cooling_fig.update_yaxes(title_text="Cooling Time (minutes)")
+    cooling_fig.update_yaxes(
+        title_text="Cooling Time (hours)", tickformat=".2f"
+    )
     return cooling_fig.to_html(full_html=False, include_plotlyjs="cdn")
 
 

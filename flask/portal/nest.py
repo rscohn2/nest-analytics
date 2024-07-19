@@ -71,8 +71,8 @@ def retrieve_nest(user, begin: datetime, end: datetime) -> List[Dict]:
                 elif trait == "sdm.devices.traits.ThermostatHvac":
                     if zone.status == "COOLING":
                         event["Cooling Time"] = (
-                            timestamp - zone.cooling_start
-                        ).seconds / 60
+                            (timestamp - zone.cooling_start).seconds / 60 / 60
+                        )
                     if value["status"] == "COOLING":
                         zone.cooling_start = timestamp
                     zone.status = value["status"]
