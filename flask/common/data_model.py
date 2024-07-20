@@ -1,6 +1,7 @@
 from os import environ
 
 import yaml
+from flask_login import UserMixin
 from google.cloud import firestore
 
 
@@ -27,7 +28,7 @@ class Building:
         return yaml.dump(self.__dict__)
 
 
-class User:
+class User(UserMixin):
     def __init__(self, attributes: dict):
         for u_key, u_value in attributes.items():
             if u_key == "buildings":
