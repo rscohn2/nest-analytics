@@ -1,5 +1,6 @@
 from datetime import datetime
 
+import pytz
 from flask_login import current_user, login_required
 from flask_wtf import FlaskForm
 from google.cloud import firestore
@@ -13,10 +14,11 @@ electric_blueprint = Blueprint("electric", __name__)
 
 # Form class
 class MeterDataForm(FlaskForm):
+    eastern = pytz.timezone("America/New_York")
     datetime = StringField(
         "Date/Time",
         validators=[DataRequired()],
-        default=datetime.now().strftime("%Y-%m-%d %H:%M"),
+        default=datetime.now(eastern).strftime("%Y-%m-%d %H:%M"),
     )
     value = IntegerField("Value", validators=[DataRequired()])
     submit = SubmitField("Submit")
