@@ -1,5 +1,6 @@
 Authlib
 Flask
+flask-login
 gunicorn
 PyYaml
 google-auth
