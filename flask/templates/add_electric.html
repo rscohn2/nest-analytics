@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+</head>
+<body>
+    <form method="post">
+        {{ form.hidden_tag() }}
+        {{ form.datetime.label }}<br>
+        {{ form.datetime(class="datetimepicker") }}<br>
+        {{ form.value.label }}<br>
+        {{ form.value() }}<br>
+        {{ form.submit() }}
+    </form>
+    {% if last_five_values %}
+        <h3>Last 5 Entries</h3>
+        <table>
+            <tr>
+                <th>Date/Time</th>
+                <th>Value</th>
+            </tr>
+            {% for entry in last_five_values %}
+                <tr>
+                    <td>{{ entry.dt }}</td>
+                    <td>{{ entry.value }}</td>
+                </tr>
+            {% endfor %}
+        </table>
+    {% endif %}
+    <script>
+        flatpickr(".datetimepicker", {
+            enableTime: true,
+            dateFormat: "Y-m-d H:i",
+        });
+    </script>
+</body>
+</html>

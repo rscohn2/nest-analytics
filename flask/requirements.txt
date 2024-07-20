@@ -1,5 +1,6 @@
 Authlib
 Flask
+Flask-WTF
 flask-login
 gunicorn
 PyYaml
