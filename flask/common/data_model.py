@@ -4,6 +4,8 @@ import yaml
 from flask_login import UserMixin
 from google.cloud import firestore
 
+from flask import current_app
+
 
 class Device:
     def __init__(self, attributes: dict):
@@ -53,6 +55,9 @@ class User(UserMixin):
         doc_ref.set(event)
         return
 
+    def check_password(self, password):
+        return password == current_app.secret_key
+
     @property
     def id(self):
         return self.guid
@@ -71,6 +76,13 @@ def load_user(guid):
         user = yaml.safe_load(file)
     add_guids("0", user)
     return User(user)
+
+
+def load_user_by_username(username):
+    u = load_user("0")
+    if u.username == username:
+        return u
+    return None
 
 
 if __name__ == "__main__":

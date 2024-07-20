@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Login</title>
+</head>
+<body>
+    <h2>Login</h2>
+    <form action="{{ url_for('auth.login') }}" method="post">
+        <div>
+            <label for="username">Username:</label>
+            <input type="text" id="username" name="username" required>
+        </div>
+        <div>
+            <label for="password">Password:</label>
+            <input type="password" id="password" name="password" required>
+        </div>
+        <form method="post">
+            <!-- Other form fields like username and password -->
+
+            <input type="hidden" name="next_url" value="{{ next_url }}">
+
+            <button type="submit">Login</button>
+        </form>
+    </form>
+
+</body>
+</html>
