@@ -53,6 +53,10 @@ class User(UserMixin):
         doc_ref.set(event)
         return
 
+    @property
+    def id(self):
+        return self.guid
+
 
 def add_guids(guid, data):
     if isinstance(data, dict):

@@ -2,8 +2,7 @@ from datetime import datetime, timedelta
 
 import pandas as pd
 import plotly.express as px
-from common.data_model import load_user
-from flask_login import login_required
+from flask_login import current_user, login_required
 from portal.nest import retrieve_nest
 from portal.weather import retrieve_weather
 
@@ -83,13 +82,12 @@ def plot_humidity(df):
 @dashboard_blueprint.route("/main", methods=["GET"])
 @login_required
 def dashboard():
-    user = load_user(0)
     # Get 'days' from query string, default to 7 if not specified
     days = int(request.args.get("days", 7))
     start_date = datetime.now() - timedelta(days=days)
     end_date = datetime.now()
 
-    df = pd.DataFrame(fetch_events(user, start_date, end_date))
+    df = pd.DataFrame(fetch_events(current_user, start_date, end_date))
 
     return render_template(
         "dashboard.html",
