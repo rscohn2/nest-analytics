@@ -1,4 +1,4 @@
-Authlib
+authlib
 Flask
 Flask-WTF
 flask-login
@@ -9,3 +9,4 @@ google-cloud-firestore
 google-cloud-secret-manager
 pandas
 plotly
+python-dotenv
