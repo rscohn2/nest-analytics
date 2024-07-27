@@ -41,7 +41,7 @@ def add():
         dt_unix = datetime.timestamp(dt_obj)
         value = form.value.data
         meter_data.add({"dt": dt_unix, "value": value})
-        return redirect(url_for("index"))
+        return redirect(url_for("electric.add"))
     last_items_ref = (
         meter_data.order_by("dt", direction=firestore.Query.DESCENDING)
         .limit(5)
