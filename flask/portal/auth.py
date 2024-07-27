@@ -101,3 +101,30 @@ def nest_callback():
     resp.raise_for_status()
     print(f"Devices: {resp.json()}")
     return redirect("/")
+
+
+oauth.register(
+    name="google",
+    client_id=getenv("GOOGLE_LOGIN_OAUTH_CLIENT_ID"),
+    client_secret=getenv("GOOGLE_LOGIN_OAUTH_CLIENT_SECRET"),
+    server_metadata_url=(
+        "https://accounts.google.com/.well-known/openid-configuration"
+    ),
+    client_kwargs={
+        "scope": "openid email profile",
+    },
+)
+
+
+@auth_blueprint.route("/google_login")
+def google_login():
+    redirect_uri = url_for("auth.google_login_callback", _external=True)
+    print(f"Redirect {redirect_uri}")
+    return oauth.google.authorize_redirect(redirect_uri)
+
+
+@auth_blueprint.route("/google_login_callback")
+def google_login_callback():
+    token = oauth.google.authorize_access_token()
+    print(f"Token {token}")
+    return redirect("/")
