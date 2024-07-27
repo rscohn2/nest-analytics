@@ -1,6 +1,7 @@
 # This needs to be before other imports
 import portal.env_setup  # noqa: F401
 from common.secrets import get_key
+from flask_login import current_user
 from portal.auth import auth_blueprint, oauth
 from portal.dashboard import dashboard_blueprint
 from portal.electric import electric_blueprint
@@ -27,7 +28,10 @@ oauth.init_app(app)
 
 @app.route("/")
 def index():
-    return "Portal is running!"
+    if current_user.is_authenticated:
+        return f"Welcome {current_user.profile.email}!"
+    else:
+        return "Portal is running!"
 
 
 if __name__ == "__main__":

@@ -3,7 +3,7 @@ from urllib.parse import urlparse
 
 import common.data_model
 from authlib.integrations.flask_client import OAuth
-from common.data_model import load_user_by_username
+from common.data_model import load_user_by_userinfo, load_user_by_username
 from flask_login import login_required, login_user, logout_user
 from portal.extensions import login_manager
 
@@ -14,8 +14,8 @@ auth_blueprint = Blueprint("auth", __name__)
 
 # Initializes flask_login.current_user
 @login_manager.user_loader
-def load_user(user_id):
-    return common.data_model.load_user(user_id)
+def load_user(id):
+    return common.data_model.load_user(id)
 
 
 def is_safe_url(target, request):
@@ -127,4 +127,6 @@ def google_login():
 def google_login_callback():
     token = oauth.google.authorize_access_token()
     print(f"Token {token}")
+    user = load_user_by_userinfo(token["userinfo"])
+    login_user(user)
     return redirect("/")
