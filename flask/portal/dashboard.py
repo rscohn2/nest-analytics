@@ -2,6 +2,7 @@ from datetime import datetime, timedelta
 
 import pandas as pd
 import plotly.express as px
+import yaml
 from flask_login import current_user, login_required
 from portal.nest import retrieve_nest
 from portal.weather import retrieve_weather
@@ -77,6 +78,30 @@ def plot_humidity(df):
     )
     html = fig.to_html(full_html=False, include_plotlyjs=False)
     return html
+
+
+@dashboard_blueprint.route("/devices", methods=["GET"])
+@login_required
+def devices():
+    return render_template(
+        "devices.html",
+        title="Devices",
+        devices_yaml=yaml.dump(
+            current_user.list_resource("devices"), default_flow_style=False
+        ),
+    )
+
+
+@dashboard_blueprint.route("/structures", methods=["GET"])
+@login_required
+def structures():
+    return render_template(
+        "yaml.html",
+        title="Structures",
+        yaml_data=yaml.dump(
+            current_user.list_resource("structures"), default_flow_style=False
+        ),
+    )
 
 
 @dashboard_blueprint.route("/main", methods=["GET"])

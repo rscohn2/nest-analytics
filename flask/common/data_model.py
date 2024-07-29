@@ -1,5 +1,6 @@
 import uuid
 
+import portal.globals as globals
 import yaml
 from flask_login import UserMixin
 from google.cloud import firestore
@@ -35,8 +36,8 @@ class Building:
 class Profile:
     def __init__(self, data: dict):
         # make the common data attributes
-        for attr in ["id", "session_id", "email"]:
-            setattr(self, attr, data[attr])
+        for attr in ["id", "session_id", "email", "nest_token"]:
+            setattr(self, attr, data.get(attr))
         # everything else as a dictionary
         self.aux = data
 
@@ -49,6 +50,7 @@ class User(UserMixin):
         self.profile = Profile(data["profile"])
         self.id = self.profile.id
         self.data = db.collection("users").document(self.profile.id)
+        self.buildings = []
 
     def __str__(self):
         return yaml.dump(self.__dict__)
@@ -70,6 +72,16 @@ class User(UserMixin):
         user = {"profile": userinfo}
         db.collection("users").add(user, userinfo["id"])
         return User(user)
+
+    def update_profile(self, name, value):
+        self.data.update({f"profile.{name}": value})
+
+    def list_resource(self, resource):
+        resp = globals.oauth.nest.get(resource, token=self.profile.nest_token)
+        resp.raise_for_status()
+        data = resp.json()
+        print(f"{resource} {data}")
+        return data
 
 
 def add_guids(guid, data):

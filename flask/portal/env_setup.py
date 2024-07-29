@@ -1,3 +1,6 @@
+# This module is used to resolve circular dependencies. It cannot import from
+# other modules in the application.
+
 from os import getenv
 
 from dotenv import load_dotenv

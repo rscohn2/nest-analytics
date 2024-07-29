@@ -2,9 +2,10 @@ from os import getenv
 from urllib.parse import urlparse
 
 import common.data_model
+import portal.globals as globals
 from authlib.integrations.flask_client import OAuth
 from common.data_model import load_user_by_userinfo, load_user_by_username
-from flask_login import login_required, login_user, logout_user
+from flask_login import current_user, login_required, login_user, logout_user
 from portal.extensions import login_manager
 
 from flask import Blueprint, flash, redirect, render_template, request, url_for
@@ -62,9 +63,21 @@ def logout():
     return redirect(url_for("index"))
 
 
+def update_nest_token(name, token, refresh_token=None, access_token=None):
+    if refresh_token:
+        print("Updating refresh token")
+        current_user.update_profile("nest_token.refresh_token", refresh_token)
+    elif access_token:
+        print("Updating access token")
+        current_user.update_profile("nest_token.access_token", access_token)
+    else:
+        return
+
+
 nest_project_id = getenv("NEST_PROJECT_ID")
-oauth = OAuth()
-oauth.register(
+globals.oauth = OAuth(update_token=update_nest_token)
+print(f"Setting oauth: {globals.oauth}")
+globals.oauth.register(
     name="nest",
     client_id=getenv("NEST_OAUTH_CLIENT_ID"),
     client_secret=getenv("NEST_OAUTH_CLIENT_SECRET"),
@@ -89,21 +102,28 @@ oauth.register(
 def nest_authorize():
     redirect_uri = url_for("auth.nest_callback", _external=True)
     print(f"Redirect {redirect_uri}")
-    return oauth.nest.authorize_redirect(redirect_uri, access_type="offline")
+    return globals.oauth.nest.authorize_redirect(
+        redirect_uri, access_type="offline"
+    )
 
 
 @auth_blueprint.route("/nest_callback")
 @login_required
 def nest_callback():
-    token = oauth.nest.authorize_access_token()
+    token = globals.oauth.nest.authorize_access_token()
+    current_user.update_profile("nest_token", token)
+    current_user.profile.nest_token = token
     print(f"Token {token}")
-    resp = oauth.nest.get("devices", token=token)
-    resp.raise_for_status()
-    print(f"Devices: {resp.json()}")
-    return redirect("/")
+
+    # resp = oauth.nest.get("devices", token=token)
+    # resp.raise_for_status()
+
+    # Listing devices completes the registration process
+    current_user.list_devices()
+    return redirect(url_for("dashboard.devices"))
 
 
-oauth.register(
+globals.oauth.register(
     name="google",
     client_id=getenv("GOOGLE_LOGIN_OAUTH_CLIENT_ID"),
     client_secret=getenv("GOOGLE_LOGIN_OAUTH_CLIENT_SECRET"),
@@ -120,13 +140,16 @@ oauth.register(
 def google_login():
     redirect_uri = url_for("auth.google_login_callback", _external=True)
     print(f"Redirect {redirect_uri}")
-    return oauth.google.authorize_redirect(redirect_uri)
+    return globals.oauth.google.authorize_redirect(redirect_uri)
 
 
 @auth_blueprint.route("/google_login_callback")
 def google_login_callback():
-    token = oauth.google.authorize_access_token()
+    token = globals.oauth.google.authorize_access_token()
     print(f"Token {token}")
     user = load_user_by_userinfo(token["userinfo"])
+    if user.profile.email != getenv("HA_AUTHORIZED_USER"):
+        return redirect("/")
+    print(f"Authorized user: {getenv('HA_AUTHORIZED_USER')}")
     login_user(user)
     return redirect("/")

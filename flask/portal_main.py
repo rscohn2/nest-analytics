@@ -1,8 +1,9 @@
 # This needs to be before other imports
 import portal.env_setup  # noqa: F401
+import portal.globals as globals
 from common.secrets import get_key
 from flask_login import current_user
-from portal.auth import auth_blueprint, oauth
+from portal.auth import auth_blueprint
 from portal.dashboard import dashboard_blueprint
 from portal.electric import electric_blueprint
 from portal.extensions import login_manager
@@ -23,7 +24,7 @@ login_manager.init_app(app)
 login_manager.login_view = "auth.login"
 
 # init oauth
-oauth.init_app(app)
+globals.oauth.init_app(app)
 
 
 @app.route("/")
