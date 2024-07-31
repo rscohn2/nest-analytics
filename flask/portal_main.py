@@ -8,7 +8,7 @@ from portal.dashboard import dashboard_blueprint
 from portal.electric import electric_blueprint
 from portal.extensions import login_manager
 
-from flask import Flask
+from flask import Flask, render_template
 
 # initialize flask app and packages that depend on it
 app = Flask(__name__)
@@ -29,10 +29,10 @@ globals.oauth.init_app(app)
 
 @app.route("/")
 def index():
-    if current_user.is_authenticated:
-        return f"Welcome {current_user.profile.email}!"
-    else:
-        return "Portal is running!"
+    return render_template(
+        "landing.html",
+        current_user=current_user if current_user.is_authenticated else None,
+    )
 
 
 if __name__ == "__main__":

@@ -84,9 +84,9 @@ def plot_humidity(df):
 @login_required
 def devices():
     return render_template(
-        "devices.html",
+        "yaml.html",
         title="Devices",
-        devices_yaml=yaml.dump(
+        yaml_data=yaml.dump(
             current_user.list_resource("devices"), default_flow_style=False
         ),
     )
