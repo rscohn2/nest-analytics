@@ -35,6 +35,14 @@ class Structure:
         self.aux["longitude"] = self.longitude
         db.collection("structures").document(self.id).set(self.aux)
 
+    @staticmethod
+    def all_structures():
+        """Returns all structures. Does not filter by user"""
+        return [
+            Structure(doc.to_dict())
+            for doc in db.collection("structures").stream()
+        ]
+
     def __str__(self):
         return yaml.dump(self.__dict__)
 

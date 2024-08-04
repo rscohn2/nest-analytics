@@ -2,7 +2,7 @@ import base64
 import json
 
 import requests
-from common.data_model import load_user
+from common.data_model import Structure, db
 from common.secrets import get_key
 
 from flask import Blueprint, abort, current_app, request
@@ -13,22 +13,23 @@ weather_name = "weather-events"
 nest_name = "nest-events"
 
 
-def fetch_weather(user) -> None:
+def fetch_weather() -> None:
     """Fetch and record weather data from OpenWeatherMap."""
-    for building in user.buildings.values():
+    for s in Structure.all_structures():
         url = (
             "https://api.openweathermap.org/data/2.5/weather"
-            f"?lat={building.latitude}&lon={building.longitude}"
+            f"?lat={s.latitude}&lon={s.longitude}"
             f"&appid={get_key('open-weather')}&units=metric"
         )
         response = requests.get(url)
         data = response.json()
-        user.store_event(weather_name, data)
+        data["structure"] = s.id
+        db.collection("weather-data").add(data)
 
 
-def hourly(user) -> None:
+def hourly() -> None:
     """Triggered once an hour by scheduler module"""
-    fetch_weather(user)
+    fetch_weather()
 
 
 def decode_message(message):
@@ -49,11 +50,4 @@ def nest_collector():
     if not request.json:
         return "Unsupported media type\n", 415
 
-    user = load_user(0)
-    user.store_event(nest_name, decode_message(request.json))
     return "Received nest event\n", 200
-
-
-# For quick tests
-if __name__ == "__main__":
-    pass
