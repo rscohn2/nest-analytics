@@ -11,6 +11,8 @@ from flask import Blueprint, redirect, render_template, url_for
 
 electric_blueprint = Blueprint("electric", __name__)
 
+db = firestore.Client()
+
 
 # Form class
 class MeterDataForm(FlaskForm):
@@ -28,22 +30,25 @@ class MeterDataForm(FlaskForm):
 @electric_blueprint.route("/add", methods=["GET", "POST"])
 @login_required
 def add():
-    meter_data = current_user.data.collection("meter_data")
+    meter_data = db.collection("meter_data")
     form = MeterDataForm()
     if form.validate_on_submit():
         # Convert datetime to UNIX timestamp
-        dt_str = (
-            form.datetime.data
-        )  # Assuming this is a string in a format like 'YYYY-MM-DD HH:MM:SS'
-        dt_obj = datetime.strptime(
-            dt_str, "%Y-%m-%d %H:%M"
-        )  # Adjust the format specifier as needed
-        dt_unix = datetime.timestamp(dt_obj)
-        value = form.value.data
-        meter_data.add({"dt": dt_unix, "value": value})
+        dt_str = form.datetime.data
+        dt_obj = datetime.strptime(dt_str, "%Y-%m-%d %H:%M")
+        entry = {
+            "dt": datetime.timestamp(dt_obj),
+            "value": form.value.data,
+            "user_id": current_user.id,
+            "structure_id": current_user.current_structure.id,
+        }
+        meter_data.add(entry)
         return redirect(url_for("electric.add"))
     last_items_ref = (
-        meter_data.order_by("dt", direction=firestore.Query.DESCENDING)
+        meter_data.where(
+            "structure_id", "==", current_user.current_structure.id
+        )
+        .order_by("dt", direction=firestore.Query.DESCENDING)
         .limit(5)
         .get()
     )
