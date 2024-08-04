@@ -1,5 +1,5 @@
 runtime: python312
-service: collector
+service: collector2
 
 entrypoint: gunicorn -b :$PORT collector_main:app
 

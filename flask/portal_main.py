@@ -7,6 +7,7 @@ from portal.auth import auth_blueprint
 from portal.dashboard import dashboard_blueprint
 from portal.electric import electric_blueprint
 from portal.extensions import login_manager
+from portal.structures import structures_blueprint
 
 from flask import Flask, render_template
 
@@ -18,6 +19,7 @@ app.secret_key = get_key("portal")
 app.register_blueprint(dashboard_blueprint, url_prefix="/dashboard")
 app.register_blueprint(auth_blueprint, url_prefix="/auth")
 app.register_blueprint(electric_blueprint, url_prefix="/electric")
+app.register_blueprint(structures_blueprint, url_prefix="/structures")
 
 # init login manager
 login_manager.init_app(app)

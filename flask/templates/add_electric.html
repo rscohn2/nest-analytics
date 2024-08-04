@@ -5,7 +5,7 @@
     <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
 </head>
 <body>
-    <form method="post">
+    <form method="post" class="electric-add-form" action="{{ url_for('electric.add') }}">
         {{ form.hidden_tag() }}
         {{ form.datetime.label }}<br>
         {{ form.datetime(class="datetimepicker") }}<br>

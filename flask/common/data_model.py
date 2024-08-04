@@ -19,15 +19,15 @@ class Device:
         return yaml.dump(self.__dict__)
 
 
-class Building:
-    def __init__(self, attributes: dict):
-        for b_key, b_value in attributes.items():
-            if b_key == "devices":
-                self.devices = {}
-                for d_key, d_value in b_value.items():
-                    self.devices[d_key] = Device(d_value)
-            else:
-                setattr(self, b_key, b_value)
+class Structure:
+    def __init__(self, data: dict):
+        # make the common data attributes
+        for attr in ["owner_id", "address", "latitude", "longitude"]:
+            setattr(self, attr, data.get(attr))
+        # everything else as a dictionary
+        self.name = data["traits"]["sdm.structures.traits.Info"]["customName"]
+        self.id = data["name"].split("/")[3]
+        self.aux = data
 
     def __str__(self):
         return yaml.dump(self.__dict__)
@@ -49,16 +49,11 @@ class User(UserMixin):
     def __init__(self, data: dict):
         self.profile = Profile(data["profile"])
         self.id = self.profile.id
+        self.structures = self.get_structures()
         self.data = db.collection("users").document(self.profile.id)
-        self.buildings = []
 
     def __str__(self):
         return yaml.dump(self.__dict__)
-
-    def store_event(self, event_type: str, event: dict) -> None:
-        doc_ref = self.data.collection(event_type).document()
-        doc_ref.set(event)
-        return
 
     def check_password(self, password):
         return password == current_app.secret_key
@@ -83,6 +78,31 @@ class User(UserMixin):
         print(f"{resource} {data}")
         return data
 
+    @staticmethod
+    def structure_doc_name(structure_name):
+        return structure_name.split("/")[3]
+
+    def get_structures(self):
+        s = (
+            db.collection("structures")
+            .where("owner_id", "==", self.id)
+            .stream()
+        )
+        return [Structure(doc.to_dict()) for doc in s]
+
+    def link_nest(self):
+        structures = self.list_resource("structures")
+        for structure in structures["structures"]:
+            # add to db
+            structure["owner_id"] = self.id
+            doc_name = self.structure_doc_name(structure["name"])
+            old = db.collection("structures").document(doc_name).get()
+            # copy some fields from old doc
+            if old.exists:
+                for key in ["address", "latitude", "longitude"]:
+                    structure[key] = old.to_dict().get(key)
+            db.collection("structures").document(doc_name).set(structure)
+
 
 def add_guids(guid, data):
     if isinstance(data, dict):
@@ -97,13 +117,6 @@ def load_user(id):
     doc = doc_ref.get()
     if doc.exists:
         return User(doc.to_dict())
-    return None
-
-
-def load_user_by_username(username):
-    u = load_user("0")
-    if u.username == username:
-        return u
     return None
 
 

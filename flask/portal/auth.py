@@ -1,14 +1,13 @@
 from os import getenv
-from urllib.parse import urlparse
 
 import common.data_model
 import portal.globals as globals
 from authlib.integrations.flask_client import OAuth
-from common.data_model import load_user_by_userinfo, load_user_by_username
+from common.data_model import load_user_by_userinfo
 from flask_login import current_user, login_required, login_user, logout_user
 from portal.extensions import login_manager
 
-from flask import Blueprint, flash, redirect, render_template, request, url_for
+from flask import Blueprint, redirect, render_template, url_for
 
 auth_blueprint = Blueprint("auth", __name__)
 
@@ -19,42 +18,9 @@ def load_user(id):
     return common.data_model.load_user(id)
 
 
-def is_safe_url(target, request):
-    # Parse the target URL
-    parsed_url = urlparse(target)
-
-    # Check if the scheme is 'http' or 'https'
-    if parsed_url.scheme not in ["http", "https"]:
-        return False
-
-    # Optional: Check if the target URL's domain matches the request's domain
-    # This step might be skipped depending on your specific requirements
-    if parsed_url.netloc != request.host:
-        return False
-
-    return True
-
-
 @auth_blueprint.route("/login", methods=["GET", "POST"])
 def login():
-    if request.method == "POST":
-        # Authenticate the user
-        username = request.form["username"]
-        password = request.form["password"]
-
-        user = load_user_by_username(username)
-        if user and user.check_password(password):
-            print("User authenticated")
-            login_user(user)
-            next_url = request.form.get("next_url")
-            if not is_safe_url(next_url, request):
-                return redirect(url_for("index"))
-            return redirect(next_url or url_for("index"))
-        else:
-            flash("Invalid username or password")
-
-    # if GET or credentials invalid, show the login form
-    return render_template("login.html", next_url=request.args.get("next"))
+    return render_template("login.html")
 
 
 @auth_blueprint.route("/logout")
@@ -115,12 +81,10 @@ def nest_callback():
     current_user.profile.nest_token = token
     print(f"Token {token}")
 
-    # resp = oauth.nest.get("devices", token=token)
-    # resp.raise_for_status()
-
     # Listing devices completes the registration process
-    current_user.list_devices()
-    return redirect(url_for("dashboard.devices"))
+    current_user.list_resource("devices")
+    current_user.link_nest()
+    return redirect("/")
 
 
 globals.oauth.register(

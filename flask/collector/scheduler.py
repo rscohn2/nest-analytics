@@ -1,5 +1,4 @@
 import collector.collector as collector
-from common.data_model import load_user
 
 from flask import Blueprint, abort, request
 
@@ -14,8 +13,7 @@ def handle_hourly_tasks():
         print("aborting")
         abort(403)  # Ensures only cron jobs can call this endpoint
 
-    user = load_user(0)
-    collector.hourly(user)
+    collector.hourly()
     return "Hourly tasks processed\n", 200
 
 
