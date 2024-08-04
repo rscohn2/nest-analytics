@@ -11,6 +11,21 @@ function afterLoad() {
     console.log("Electric add form submit triggered")
     loadPostContent(e, this)
   });
+  console.log("structures-edit-form length: " +
+              $('.structures-edit-form').length)
+  console.log("structures-edit-button length: " +
+              $('.structures-edit-button').length)
+
+  $('.structures-edit-form').submit(function(e) {
+    console.log("Structures edit form submit triggered")
+    loadPostContent(e, this)
+  });
+
+  $('.structures-edit-button').click(function(e) {
+    e.preventDefault();
+    console.log("structure edit button click")
+    loadGetContent($(this).data('url'));
+  });
 }
 
 function loadPostContent(e, form) {

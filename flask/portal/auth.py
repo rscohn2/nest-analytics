@@ -15,7 +15,8 @@ auth_blueprint = Blueprint("auth", __name__)
 # Initializes flask_login.current_user
 @login_manager.user_loader
 def load_user(id):
-    return common.data_model.load_user(id)
+    user = common.data_model.load_user(id)
+    return user
 
 
 @auth_blueprint.route("/login", methods=["GET", "POST"])

@@ -1,0 +1,7 @@
+    <div class="container mt-5">
+        Name: {{ structure.name }}<br>
+        Address: {{ structure.address if structure.address else ""}}<br>
+        Latitude: {{ structure.latitude if structure.latitude else ""}}<br>
+        Longitude: {{ structure.longitude if structure.longitude else "" }}<br>
+        <a href="#" data-url="{{ url_for('structures.edit', structure_id=structure.id) }}" class="structures-edit-button btn btn-primary mt-3">Edit</a>
+    </div>

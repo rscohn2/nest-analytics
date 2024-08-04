@@ -29,6 +29,12 @@ class Structure:
         self.id = data["name"].split("/")[3]
         self.aux = data
 
+    def save(self):
+        self.aux["address"] = self.address
+        self.aux["latitude"] = self.latitude
+        self.aux["longitude"] = self.longitude
+        db.collection("structures").document(self.id).set(self.aux)
+
     def __str__(self):
         return yaml.dump(self.__dict__)
 
@@ -50,6 +56,9 @@ class User(UserMixin):
         self.profile = Profile(data["profile"])
         self.id = self.profile.id
         self.structures = self.get_structures()
+        self.current_structure = (
+            self.structures[0] if len(self.structures) > 0 else None
+        )
         self.data = db.collection("users").document(self.profile.id)
 
     def __str__(self):
