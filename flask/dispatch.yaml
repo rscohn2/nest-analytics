@@ -1,5 +1,3 @@
 dispatch:
-  - url: "collector.climate.rcohn.us/*"
-    service: collector2
   - url: "climate.rcohn.us/*"
     service: default

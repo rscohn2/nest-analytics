@@ -3,9 +3,4 @@ cron:
     url: /scheduler/hourly
     schedule: every 1 hours
     timezone: America/Chicago
-    target: collector
-  - description: "Hourly task"
-    url: /scheduler/hourly
-    schedule: every 1 hours
-    timezone: America/Chicago
     target: collector2
