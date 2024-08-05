@@ -1,16 +1,72 @@
-import base64
 import json
 
 import requests
+import yaml
 from common.data_model import Structure, db
-from common.secrets import get_key
+from common.secrets import current_project_id, get_key
+from google.cloud import pubsub_v1
 
-from flask import Blueprint, abort, current_app, request
 
-collector_blueprint = Blueprint("collector", __name__)
+def filter_event(event, temperatures, humidities):
+    resource = event.get("resourceUpdate")
+    if not resource:
+        return True
 
-weather_name = "weather-events"
-nest_name = "nest-events"
+    thermostat = resource["name"]
+    traits = resource["traits"]
+
+    trait_v = traits.get("sdm.devices.traits.Temperature")
+    if trait_v:
+        previous = temperatures.get(thermostat)
+        current = trait_v["ambientTemperatureCelsius"]
+        if previous and abs(current - previous) < 0.25:
+            return False
+        temperatures[thermostat] = current
+        return True
+
+    trait_v = traits.get("sdm.devices.traits.Humidity")
+    if trait_v:
+        previous = humidities.get(thermostat)
+        current = trait_v["ambientHumidityPercent"]
+        if previous and abs(current - previous) < 1:
+            return False
+        humidities[thermostat] = current
+        return True
+
+    return True
+
+
+def fetch_nest() -> None:
+    """Pull nest subscription and record."""
+    subscriber = pubsub_v1.SubscriberClient()
+    subscription_path = subscriber.subscription_path(
+        current_project_id(), "nest-pull"
+    )
+    response = subscriber.pull(
+        request={
+            "subscription": subscription_path,
+            "max_messages": 10,
+        }
+    )
+
+    temperatures = {}
+    humidities = {}
+    ack_ids = []
+    for received_message in response.received_messages:
+        print(f"Received message: {received_message.message.data}")
+        data = json.loads(received_message.message.data.decode("utf-8"))
+        db.collection("nest-data-all").add(data)
+        if filter_event(data, temperatures, humidities):
+            db.collection("nest-data").add(data)
+        ack_ids.append(received_message.ack_id)
+
+    # Acknowledge the received messages so they will not be sent again.
+    subscriber.acknowledge(
+        request={
+            "subscription": subscription_path,
+            "ack_ids": ack_ids,
+        }
+    )
 
 
 def fetch_weather() -> None:
@@ -30,24 +86,19 @@ def fetch_weather() -> None:
 def hourly() -> None:
     """Triggered once an hour by scheduler module"""
     fetch_weather()
+    fetch_nest()
 
 
-def decode_message(message):
-    encoded_data = message["message"]["data"]
-    data = base64.b64decode(encoded_data).decode()
-    o = json.loads(data)
-    return o
+def load_events_from_yaml(file_path: str) -> None:
+    with open(file_path, "r") as file:
+        return yaml.safe_load(file)
 
 
-@collector_blueprint.route("/nest", methods=["POST"])
-def nest_collector():
-    """Record information reported by thermostat"""
-    token = request.args.get("token", default=None, type=str)
-    if not token or token != current_app.secret_key:
-        print("aborting")
-        abort(403)
-
-    if not request.json:
-        return "Unsupported media type\n", 415
-
-    return "Received nest event\n", 200
+if __name__ == "__main__":
+    temperatures = {}
+    humidities = {}
+    events = load_events_from_yaml("nest-data-all.yaml")
+    for event in events:
+        print(f"{yaml.dump(event)}")
+        if not filter_event(event, temperatures, humidities):
+            print("Discard")

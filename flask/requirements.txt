@@ -6,6 +6,7 @@ gunicorn
 PyYaml
 google-auth
 google-cloud-firestore
+google-cloud-pubsub
 google-cloud-secret-manager
 pandas
 plotly

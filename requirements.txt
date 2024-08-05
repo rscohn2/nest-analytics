@@ -1,5 +1,2 @@
-google-cloud-firestore
-matplotlib
-pandas
 pre-commit
-seaborn
+pytest
