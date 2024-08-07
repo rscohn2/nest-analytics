@@ -13,8 +13,9 @@ dashboard_blueprint = Blueprint("dashboard", __name__)
 
 
 def fetch_events(user, start_date, end_date):
-    events = retrieve_weather(user, start_date, end_date)
-    events.extend(retrieve_nest(user, start_date, end_date))
+    structure_id = user.current_structure.id
+    events = retrieve_weather(structure_id, start_date, end_date)
+    events.extend(retrieve_nest(structure_id, start_date, end_date))
     return events
 
 
@@ -36,7 +37,7 @@ def plot_cooling_time(df):
     cooling_fig.update_yaxes(
         title_text="Cooling Time (hours)", tickformat=".2f"
     )
-    return cooling_fig.to_html(full_html=False, include_plotlyjs="cdn")
+    return cooling_fig.to_html(full_html=False, include_plotlyjs=False)
 
 
 def plot_temperature(df):
@@ -57,7 +58,7 @@ def plot_temperature(df):
         df_filtered, x="Time", y="Temperature", color="Zone", markers=True
     )
     temperature_html = temperature_fig.to_html(
-        full_html=False, include_plotlyjs="cdn"
+        full_html=False, include_plotlyjs=False
     )
     return temperature_html
 
@@ -104,9 +105,9 @@ def structures():
     )
 
 
-@dashboard_blueprint.route("/main", methods=["GET"])
+@dashboard_blueprint.route("/charts", methods=["GET"])
 @login_required
-def dashboard():
+def charts():
     # Get 'days' from query string, default to 7 if not specified
     days = int(request.args.get("days", 7))
     start_date = datetime.now() - timedelta(days=days)
@@ -115,8 +116,8 @@ def dashboard():
     df = pd.DataFrame(fetch_events(current_user, start_date, end_date))
 
     return render_template(
-        "dashboard.html",
+        "charts.html",
         temperature_fig=plot_temperature(df),
         humidity_fig=plot_humidity(df),
-        cooling_time_fig=plot_cooling_time(df),
+        # cooling_time_fig=plot_cooling_time(df),
     )

@@ -4,9 +4,12 @@ from os import environ
 from typing import Dict, List
 
 import pandas as pd
+from common.data_model import db
 
 
-def retrieve_weather(user, begin: datetime, end: datetime) -> List[Dict]:
+def retrieve_weather(
+    structure_id: str, begin: datetime, end: datetime
+) -> List[Dict]:
     local_file = "weather-events.json"
     if environ.get("HA_WEATHER") == "replay":
         with open(local_file, "r") as file:
@@ -16,9 +19,10 @@ def retrieve_weather(user, begin: datetime, end: datetime) -> List[Dict]:
         end_timestamp = int(end.timestamp())
 
         observations = (
-            user.data.collection("weather-events")
+            db.collection("weather-data")
             .where("dt", ">=", begin_timestamp)
             .where("dt", "<=", end_timestamp)
+            .where("structure", "==", structure_id)
             .stream()
         )
         # sort based on dt field
@@ -38,7 +42,7 @@ def retrieve_weather(user, begin: datetime, end: datetime) -> List[Dict]:
         )
         event = {}
         event["Time"] = timestamp
-        event["Zone"] = "Weather"
+        event["Zone"] = "Outside"
         event["Temperature"] = observation["main"]["temp"] * 9 / 5 + 32
         event["Humidity"] = observation["main"]["humidity"]
         events.append(event)

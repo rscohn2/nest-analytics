@@ -6,6 +6,7 @@
     <title>Climate</title>
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+    <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
     <style>
         body {
             display: flex;
@@ -82,18 +83,7 @@
     </nav>
     <div class="wrapper">
         <div class="sidebar">
-            <a href="#coolingSubmenu" data-toggle="collapse" aria-expanded="false" class="dropdown-toggle">Cooling</a>
-            <ul class="collapse list-unstyled" id="coolingSubmenu">
-                <li>
-                    <a href="#" class="sidebar-link" data-url="/dashboard/main">History</a>
-                </li>
-            </ul>
-            <a href="#heatingSubmenu" data-toggle="collapse" aria-expanded="false" class="dropdown-toggle">Heating</a>
-            <ul class="collapse list-unstyled" id="heatingSubmenu">
-                <li>
-                    <a href="#" class="sidebar-link" data-url="/dashboard/main">History</a>
-                </li>
-            </ul>
+            <a href="#" class="sidebar-link" data-url="/dashboard/charts">Charts</a>
             <a href="#electricitySubmenu" data-toggle="collapse" aria-expanded="false" class="dropdown-toggle">Electricity</a>
             <ul class="collapse list-unstyled" id="electricitySubmenu">
                 <li>

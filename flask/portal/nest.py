@@ -4,6 +4,7 @@ from os import environ
 from typing import Dict, List
 
 import pandas as pd
+from common.data_model import db
 
 
 class Zone:
@@ -24,7 +25,9 @@ def convert_to_iso(dt: datetime) -> str:
     return dt.astimezone(timezone.utc).isoformat().replace("+00:00", "Z")
 
 
-def retrieve_nest(user, begin: datetime, end: datetime) -> List[Dict]:
+def retrieve_nest(
+    structure_id: str, begin: datetime, end: datetime
+) -> List[Dict]:
     local_file = "nest-events.json"
     replay_cmd = environ.get("HA_NEST")
     if replay_cmd == "replay":
@@ -34,7 +37,7 @@ def retrieve_nest(user, begin: datetime, end: datetime) -> List[Dict]:
         b = convert_to_iso(begin)
         e = convert_to_iso(end)
         observations = (
-            user.data.collection("nest-events")
+            db.collection("nest-events")
             .where("timestamp", ">=", b)
             .where("timestamp", "<=", e)
             .stream()
@@ -48,7 +51,7 @@ def retrieve_nest(user, begin: datetime, end: datetime) -> List[Dict]:
         with open(local_file, "w") as file:
             json.dump(observations, file, indent=4, sort_keys=True)
 
-    zones = zone_map(user)
+    zones = {}
     events = []
     for observation in observations:
         timestamp = pd.to_datetime(observation["timestamp"]).tz_convert(
