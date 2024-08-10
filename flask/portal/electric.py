@@ -52,7 +52,7 @@ def add():
         .limit(5)
         .get()
     )
-    last_five_values = [
+    values = [
         {
             "dt": datetime.fromtimestamp(entry.to_dict()["dt"]).strftime(
                 "%Y-%m-%d %H:%M"
@@ -62,9 +62,7 @@ def add():
         for entry in last_items_ref
     ]
 
-    last_value = last_five_values[0]["value"] if last_five_values else 0
+    last_value = values[0]["value"] if values else 0
     form.value.data = last_value
 
-    return render_template(
-        "add_electric.html", form=form, last_five_values=last_five_values
-    )
+    return render_template("add_electric.html", form=form, values=values)

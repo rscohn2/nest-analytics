@@ -13,14 +13,13 @@
         {{ form.value() }}<br>
         {{ form.submit() }}
     </form>
-    {% if last_five_values %}
-        <h3>Last 5 Entries</h3>
+    {% if values %}
         <table>
             <tr>
                 <th>Date/Time</th>
                 <th>Value</th>
             </tr>
-            {% for entry in last_five_values %}
+            {% for entry in values %}
                 <tr>
                     <td>{{ entry.dt }}</td>
                     <td>{{ entry.value }}</td>
