@@ -18,11 +18,11 @@ class Zone:
         self.status = "unknown"
 
 
-def zone_map(user):
+def zone_map():
     zones = {}
-    for building in user.buildings.values():
-        for device in building.devices.values():
-            zones[device.resource] = Zone(device.name)
+    for room_id, room in current_user.current_structure.rooms.items():
+        for device_id, device in room["devices"].items():
+            zones[device["name"]] = Zone(room["name"])
     return zones
 
 
@@ -33,6 +33,8 @@ def convert_to_iso(dt: datetime) -> str:
 def retrieve_nest(
     structure_id: str, begin: datetime, end: datetime
 ) -> List[Dict]:
+    zones = zone_map()
+
     local_file = "nest-events.json"
     replay_cmd = environ.get("HA_NEST")
     if replay_cmd == "replay":
@@ -42,7 +44,7 @@ def retrieve_nest(
         b = convert_to_iso(begin)
         e = convert_to_iso(end)
         observations = (
-            db.collection("nest-events")
+            db.collection("nest-data")
             .where("timestamp", ">=", b)
             .where("timestamp", "<=", e)
             .stream()
@@ -56,7 +58,6 @@ def retrieve_nest(
         with open(local_file, "w") as file:
             json.dump(observations, file, indent=4, sort_keys=True)
 
-    zones = {}
     events = []
     for observation in observations:
         timestamp = pd.to_datetime(observation["timestamp"]).tz_convert(

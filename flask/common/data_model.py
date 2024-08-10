@@ -43,6 +43,7 @@ class Structure:
         # everything else as a dictionary
         self.name = data["traits"]["sdm.structures.traits.Info"]["customName"]
         self.id = extract_id(data["name"], "structures")
+        self.rooms = data["rooms"]
         self.aux = data
 
     def save(self):

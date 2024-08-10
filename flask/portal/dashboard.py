@@ -94,5 +94,5 @@ def charts():
         "charts.html",
         temperature_fig=plot_temperature(df),
         humidity_fig=plot_humidity(df),
-        # cooling_time_fig=plot_cooling_time(df),
+        cooling_time_fig=plot_cooling_time(df),
     )
