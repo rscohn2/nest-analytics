@@ -4,11 +4,10 @@ from os import environ
 from typing import Dict, List
 
 import pandas as pd
-import yaml
 from common.data_model import db
 from flask_login import current_user, login_required
 
-from flask import Blueprint, render_template
+from flask import Blueprint, redirect
 
 nest_blueprint = Blueprint("nest", __name__)
 
@@ -101,40 +100,8 @@ def retrieve_nest(
     return events
 
 
-@nest_blueprint.route("/devices", methods=["GET"])
+@nest_blueprint.route("/update", methods=["GET"])
 @login_required
-def devices():
-    return render_template(
-        "yaml.html",
-        title="Devices",
-        yaml_data=yaml.dump(
-            current_user.list_resource("devices"), default_flow_style=False
-        ),
-    )
-
-
-@nest_blueprint.route("/structures", methods=["GET"])
-@login_required
-def structures():
-    return render_template(
-        "yaml.html",
-        title="Structures",
-        yaml_data=yaml.dump(
-            current_user.list_resource("structures"), default_flow_style=False
-        ),
-    )
-
-
-@nest_blueprint.route("/rooms", methods=["GET"])
-@login_required
-def rooms():
-    return render_template(
-        "yaml.html",
-        title="Rooms",
-        yaml_data=yaml.dump(
-            current_user.list_resource(
-                f"structures/{current_user.current_structure.id}/rooms"
-            ),
-            default_flow_style=False,
-        ),
-    )
+def update():
+    current_user.link_nest()
+    return redirect("/")

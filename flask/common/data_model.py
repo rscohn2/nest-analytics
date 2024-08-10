@@ -10,6 +10,22 @@ from flask import current_app
 db = firestore.Client()
 
 
+def extract_id(name, key):
+    parts = name.split("/")
+    for i in range(0, len(parts) - 1, 2):
+        if parts[i] == key:
+            return parts[i + 1]
+    return None
+
+
+def room_name(device):
+    for p in device["parentRelations"]:
+        name = p.get("displayName")
+        if name:
+            return name
+    return None
+
+
 class Device:
     def __init__(self, attributes: dict):
         for key, value in attributes.items():
@@ -26,7 +42,7 @@ class Structure:
             setattr(self, attr, data.get(attr))
         # everything else as a dictionary
         self.name = data["traits"]["sdm.structures.traits.Info"]["customName"]
-        self.id = data["name"].split("/")[3]
+        self.id = extract_id(data["name"], "structures")
         self.aux = data
 
     def save(self):
@@ -95,10 +111,6 @@ class User(UserMixin):
         print(f"{resource} {data}")
         return data
 
-    @staticmethod
-    def structure_doc_name(structure_name):
-        return structure_name.split("/")[3]
-
     def get_structures(self):
         s = (
             db.collection("structures")
@@ -108,17 +120,45 @@ class User(UserMixin):
         return [Structure(doc.to_dict()) for doc in s]
 
     def link_nest(self):
-        structures = self.list_resource("structures")
-        for structure in structures["structures"]:
+        structures = {}
+        for structure in self.list_resource("structures")["structures"]:
             # add to db
             structure["owner_id"] = self.id
-            doc_name = self.structure_doc_name(structure["name"])
-            old = db.collection("structures").document(doc_name).get()
+            doc_name = extract_id(structure["name"], "structures")
+            old_ref = db.collection("structures").document(doc_name).get()
+            old = old_ref.to_dict()
             # copy some fields from old doc
-            if old.exists:
-                for key in ["address", "latitude", "longitude"]:
-                    structure[key] = old.to_dict().get(key)
-            db.collection("structures").document(doc_name).set(structure)
+            if old_ref.exists:
+                for key in ["address", "latitude", "longitude", "rooms"]:
+                    if key in old:
+                        structure[key] = old[key]
+            if "rooms" not in structure:
+                structure["rooms"] = {}
+            structures[doc_name] = structure
+
+        for device in self.list_resource("devices")["devices"]:
+            assignee = device["assignee"]
+            structure_id = extract_id(assignee, "structures")
+            room_id = extract_id(assignee, "rooms")
+            device_id = extract_id(device["name"], "devices")
+            structure = structures[structure_id]
+            room = structure["rooms"].get(room_id)
+            if not room:
+                room = {
+                    "name": room_name(device),
+                    "id": room_id,
+                    "devices": {},
+                }
+                structure["rooms"][room_id] = room
+            old_device = room.get(device_id)
+            if not old_device:
+                room["devices"][device_id] = device
+        print(
+            f"Structures:\n{yaml.dump(structures, default_flow_style=False)}"
+        )
+
+        for id, structure in structures.items():
+            db.collection("structures").document(id).set(structure)
 
 
 def add_guids(guid, data):

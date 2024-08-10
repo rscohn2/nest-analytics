@@ -71,6 +71,9 @@
                         <a class="nav-link" href="/auth/nest_authorize">Link Nest Devices</a>
                     </li>
                     <li class="nav-item">
+                        <a class="nav-link" href="/nest/update">Update Nest Devices</a>
+                    </li>
+                    <li class="nav-item">
                         <a class="nav-link" href="/auth/logout">Logout</a>
                     </li>
                 {% else %}
@@ -103,16 +106,16 @@
                 </li>
             </ul>
             <a href="#" class="sidebar-link" data-url="/structures/current">Building Info</a>
-            <a href="#nestDataSubmenu" data-toggle="collapse" aria-expanded="false" class="dropdown-toggle">Nest Data</a>
+            <a href="#nestDataSubmenu" data-toggle="collapse" aria-expanded="false" class="dropdown-toggle">Debug</a>
             <ul class="collapse list-unstyled" id="nestDataSubmenu">
                 <li>
-                    <a href="#" class="sidebar-link" data-url="/nest/devices">Devices</a>
+                    <a href="#" class="sidebar-link" data-url="/nest/devices">Nest Devices</a>
                 </li>
                 <li>
-                    <a href="#" class="sidebar-link" data-url="/nest/structures">Structures</a>
+                    <a href="#" class="sidebar-link" data-url="/nest/structures">Nest Structures</a>
                 </li>
                 <li>
-                    <a href="#" class="sidebar-link" data-url="/nest/rooms">Rooms</a>
+                    <a href="#" class="sidebar-link" data-url="/nest/rooms">Nest Rooms</a>
                 </li>
             </ul>
         </div>

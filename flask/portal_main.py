@@ -5,6 +5,7 @@ from common.secrets import get_key
 from flask_login import current_user
 from portal.auth import auth_blueprint
 from portal.dashboard import dashboard_blueprint
+from portal.debug import debug_blueprint
 from portal.electric import electric_blueprint
 from portal.extensions import login_manager
 from portal.nest import nest_blueprint
@@ -17,11 +18,12 @@ app = Flask(__name__)
 app.secret_key = get_key("portal")
 
 # init blueprints
-app.register_blueprint(dashboard_blueprint, url_prefix="/dashboard")
 app.register_blueprint(auth_blueprint, url_prefix="/auth")
+app.register_blueprint(dashboard_blueprint, url_prefix="/dashboard")
+app.register_blueprint(debug_blueprint, url_prefix="/debug")
 app.register_blueprint(electric_blueprint, url_prefix="/electric")
-app.register_blueprint(structures_blueprint, url_prefix="/structures")
 app.register_blueprint(nest_blueprint, url_prefix="/nest")
+app.register_blueprint(structures_blueprint, url_prefix="/structures")
 
 # init login manager
 login_manager.init_app(app)
