@@ -6,9 +6,9 @@ from flask import Blueprint, render_template
 debug_blueprint = Blueprint("debug", __name__)
 
 
-@debug_blueprint.route("/devices", methods=["GET"])
+@debug_blueprint.route("/nest-devices", methods=["GET"])
 @login_required
-def devices():
+def nest_devices():
     return render_template(
         "yaml.html",
         title="Devices",
@@ -18,9 +18,9 @@ def devices():
     )
 
 
-@debug_blueprint.route("/structures", methods=["GET"])
+@debug_blueprint.route("/nest-structures", methods=["GET"])
 @login_required
-def structures():
+def nest_structures():
     return render_template(
         "yaml.html",
         title="Structures",
@@ -30,9 +30,9 @@ def structures():
     )
 
 
-@debug_blueprint.route("/rooms", methods=["GET"])
+@debug_blueprint.route("/nest-rooms", methods=["GET"])
 @login_required
-def rooms():
+def nest_rooms():
     return render_template(
         "yaml.html",
         title="Rooms",
@@ -41,5 +41,19 @@ def rooms():
                 f"structures/{current_user.current_structure.id}/rooms"
             ),
             default_flow_style=False,
+        ),
+    )
+
+
+@debug_blueprint.route("/structure", methods=["GET"])
+@login_required
+def structure():
+    for key in current_user.current_structure.aux["rooms"]:
+        print(f"type: {type(key)} val {key}")
+    return render_template(
+        "yaml.html",
+        title="Structure",
+        yaml_data=yaml.dump(
+            current_user.current_structure.__dict__, default_flow_style=False
         ),
     )
