@@ -45,20 +45,22 @@ def fetch_nest() -> None:
     response = subscriber.pull(
         request={
             "subscription": subscription_path,
-            "max_messages": 10,
+            "max_messages": 500,
         }
     )
 
     temperatures = {}
     humidities = {}
     ack_ids = []
+    batch = db.batch()
     for received_message in response.received_messages:
         print(f"Received message: {received_message.message.data}")
         data = json.loads(received_message.message.data.decode("utf-8"))
-        db.collection("nest-data-all").add(data)
+        batch.set(db.collection("nest-data-all").document(), data)
         if filter_event(data, temperatures, humidities):
-            db.collection("nest-data").add(data)
+            batch.set(db.collection("nest-data").document(), data)
         ack_ids.append(received_message.ack_id)
+    batch.commit()
 
     # Acknowledge the received messages so they will not be sent again.
     subscriber.acknowledge(

@@ -4,6 +4,7 @@ from os import environ
 from typing import Dict, List
 
 import pandas as pd
+import pytz
 from common.data_model import db
 from flask_login import current_user, login_required
 
@@ -16,6 +17,9 @@ class Zone:
     def __init__(self, name: str) -> None:
         self.name = name
         self.status = "unknown"
+
+    def elapsed_cooling_time(self, end_time):
+        return (end_time - self.cooling_start).seconds / 60 / 60
 
 
 def zone_map():
@@ -79,8 +83,8 @@ def retrieve_nest(
                     event["Humidity"] = value["ambientHumidityPercent"]
                 elif trait == "sdm.devices.traits.ThermostatHvac":
                     if zone.status == "COOLING":
-                        event["Cooling Time"] = (
-                            (timestamp - zone.cooling_start).seconds / 60 / 60
+                        event["Cooling Time"] = zone.elapsed_cooling_time(
+                            timestamp
                         )
                     if value["status"] == "COOLING":
                         zone.cooling_start = timestamp
@@ -98,6 +102,15 @@ def retrieve_nest(
                 else:
                     raise ValueError(f"Unexpected trait: {trait}")
                 events.append(event)
+    # count cooling period that does not end. ensure that there is at least 1
+    # cooling time event
+    e = end.replace(tzinfo=pytz.utc).astimezone(pytz.timezone("US/Eastern"))
+    for _, zone in zones.items():
+        elapsed = (
+            zone.elapsed_cooling_time(end) if zone.status == "COOLING" else 0
+        )
+        event = {"Time": e, "Zone": zone.name, "Cooling Time": elapsed}
+        events.append(event)
     return events
 
 
